@@ -244,6 +244,15 @@ i[3-7]86-*-bsd)		targ_emul=i386bsd ;;
 i[3-7]86-*-bsd386)	targ_emul=i386bsd ;;
 i[3-7]86-*-bsdi*)	targ_emul=i386bsd ;;
 i[3-7]86-*-aout)	targ_emul=i386aout ;;
+i[3-7]86-*-dennix*)
+			targ_emul=elf_i386_dennix
+			targ_extra_emuls=elf_i386
+			targ64_extra_emuls="elf_x86_64_dennix elf_x86_64"
+			;;
+x86_64-*-dennix*)
+			targ_emul=elf_x86_64_dennix
+			targ_extra_emuls="eld_i386_dennix elf_x86_64 elf_i386"
+			;;
 i[3-7]86-*-linux*aout*)	targ_emul=i386linux
 			targ_extra_emuls="elf_i386 elf_iamcu"
 			tdir_elf_iamcu=`echo ${targ_alias} | sed -e 's/aout//'`

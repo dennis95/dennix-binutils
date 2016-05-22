@@ -282,6 +282,7 @@ ALL_EMULATION_SOURCES = \
 	eelf_i386.c \
 	eelf_i386_be.c \
 	eelf_i386_chaos.c \
+	eelf_i386_dennix.c \
 	eelf_i386_fbsd.c \
 	eelf_i386_ldso.c \
 	eelf_i386_nacl.c \
@@ -497,6 +498,7 @@ ALL_64_EMULATION_SOURCES = \
 	eelf_k1om_fbsd.c \
 	eelf_x86_64.c \
 	eelf_x86_64_cloudabi.c \
+	eelf_x86_64_dennix.c \
 	eelf_x86_64_fbsd.c \
 	eelf_x86_64_nacl.c \
 	eelf_x86_64_sol2.c \
@@ -1301,6 +1303,9 @@ eelf_i386_be.c: $(srcdir)/emulparams/elf_i386_be.sh \
 eelf_i386_chaos.c: $(srcdir)/emulparams/elf_i386_chaos.sh \
   $(ELF_DEPS) $(srcdir)/scripttempl/elf_chaos.sc ${GEN_DEPENDS}
 
+eelf_i386_dennix.c: $(srcdir)/emulparams/elf_i386_dennix.sh \
+  $(ELF_DEPS) $(srcdir)/scripttempl/elf.sc ${GEN_DEPENDS}
+
 eelf_i386_fbsd.c: $(srcdir)/emulparams/elf_i386_fbsd.sh \
   $(srcdir)/emulparams/elf_i386.sh \
   $(ELF_DEPS) $(srcdir)/scripttempl/elf.sc ${GEN_DEPENDS}
@@ -1989,6 +1994,9 @@ eelf_x86_64.c: $(srcdir)/emulparams/elf_x86_64.sh \
 
 eelf_x86_64_cloudabi.c: $(srcdir)/emulparams/elf_x86_64_cloudabi.sh \
   $(srcdir)/emulparams/elf_x86_64.sh \
+  $(ELF_DEPS) $(srcdir)/scripttempl/elf.sc ${GEN_DEPENDS}
+
+eelf_x86_64_dennix.c: $(srcdir)/emulparams/elf_x86_64_dennix.sh \
   $(ELF_DEPS) $(srcdir)/scripttempl/elf.sc ${GEN_DEPENDS}
 
 eelf_x86_64_fbsd.c: $(srcdir)/emulparams/elf_x86_64_fbsd.sh \
