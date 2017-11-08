@@ -833,6 +833,10 @@ esac
 NATIVE_LIB_DIRS='/usr/local/lib /lib /usr/lib'
 case "${target}" in
 
+*-*-dennix*)
+  NATIVE_LIB_DIRS='/local/lib /lib'
+  ;;
+
 *-*-dragonfly*)
   NATIVE_LIB_DIRS='/lib /usr/lib /usr/pkg/lib /usr/local/lib'
   ;;
