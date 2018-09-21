@@ -185,8 +185,10 @@ smart_rename (const char *from, const char *to, int preserve_dates ATTRIBUTE_UNU
 		 want to introduce an unexpected setuid file owned by
 		 the user running objcopy.  */
 	      chmod (to, s.st_mode & 0777);
+#ifndef __dennix__
 	      if (chown (to, s.st_uid, s.st_gid) >= 0)
 		chmod (to, s.st_mode & 07777);
+#endif
 	    }
 	}
       else
