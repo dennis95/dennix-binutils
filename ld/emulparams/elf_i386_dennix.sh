@@ -1,4 +1,3 @@
 . ${srcdir}/emulparams/elf_i386.sh
-GENERATE_SHLIB_SCRIPT=yes
-GENERATE_PIE_SCRIPT=yes
+OUTPUT_FORMAT="elf32-i386-dennix"
 TEXT_START_ADDR=0x100000

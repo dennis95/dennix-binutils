@@ -5798,6 +5798,17 @@ elf_i386_add_symbol_hook (bfd * abfd,
 
 #include "elf32-target.h"
 
+/* Dennix support.  */
+#undef	TARGET_LITTLE_SYM
+#define	TARGET_LITTLE_SYM		i386_elf32_dennix_vec
+#undef	TARGET_LITTLE_NAME
+#define	TARGET_LITTLE_NAME		"elf32-i386-dennix"
+#undef	ELF_OSABI
+#undef	elf32_bed
+#define	elf32_bed			elf32_i386_dennix_bed
+
+#include "elf32-target.h"
+
 /* FreeBSD support.  */
 
 #undef	TARGET_LITTLE_SYM

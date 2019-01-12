@@ -569,9 +569,9 @@ case "${targ}" in
     targ_selvecs=iamcu_elf32_vec
     ;;
   i[3-7]86-*-dennix*)
-    targ_defvec=i386_elf32_vec
-    targ_selvecs=
-    targ64_selvecs=x86_64_elf64_vec
+    targ_defvec=i386_elf32_dennix_vec
+    targ_selvecs=i386_elf32_vec
+    targ64_selvecs="x86_64_elf64_dennix_vec x86_64_elf64_vec"
     ;;
   i[3-7]86-*-dicos*)
     targ_defvec=i386_elf32_vec
@@ -676,8 +676,8 @@ case "${targ}" in
     want64=true
     ;;
   x86_64-*-dennix*)
-    targ_defvec=x86_64_elf64_vec
-    targ_selvecs=i386_elf32_vec
+    targ_defvec=x86_64_elf64_dennix_vec
+    targ_selvecs="x86_64_elf64_vec i386_elf32_dennix_vec i386_elf32_vec"
     want64=true
     ;;
   x86_64-*-dicos*)

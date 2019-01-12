@@ -54,6 +54,11 @@ extern unsigned long i386_mach (void);
 #define AOUT_TARGET_FORMAT	"a.out-i386"
 #endif
 
+#ifdef TE_Dennix
+#define ELF_TARGET_FORMAT	"elf32-i386-dennix"
+#define ELF_TARGET_FORMAT64	"elf64-x86-64-dennix"
+#endif
+
 #ifdef TE_FreeBSD
 #define ELF_TARGET_FORMAT	"elf32-i386-freebsd"
 #define ELF_TARGET_FORMAT64	"elf64-x86-64-freebsd"
