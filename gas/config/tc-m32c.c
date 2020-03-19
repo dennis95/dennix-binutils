@@ -1,5 +1,5 @@
 /* tc-m32c.c -- Assembler for the Renesas M32C.
-   Copyright (C) 2005-2015 Free Software Foundation, Inc.
+   Copyright (C) 2005-2020 Free Software Foundation, Inc.
    Contributed by RedHat.
 
    This file is part of GAS, the GNU Assembler.
@@ -15,9 +15,9 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with GAS; see the file COPYING.  If not, write to
-   the Free Software Foundation, 59 Temple Place - Suite 330,
-   Boston, MA 02111-1307, USA.  */
+   along with this program; if not, write to the Free Software
+   Foundation, Inc., 51 Franklin Street - Fifth Floor, Boston,
+   MA 02110-1301, USA.  */
 
 #include "as.h"
 #include "subsegs.h"
@@ -27,7 +27,6 @@
 #include "cgen.h"
 #include "elf/common.h"
 #include "elf/m32c.h"
-#include "libbfd.h"
 #include "safe-ctype.h"
 
 /* Structure to hold all of the different components
@@ -87,7 +86,6 @@ size_t md_longopts_size = sizeof (md_longopts);
 
 static unsigned long m32c_mach = bfd_mach_m16c;
 static int cpu_mach = (1 << MACH_M16C);
-static int insn_size;
 static int m32c_relax = 0;
 
 /* Flags to set in the elf header */
@@ -105,7 +103,7 @@ set_isa (enum isa_attr isa_num)
 static void s_bss (int);
 
 int
-md_parse_option (int c, char * arg ATTRIBUTE_UNUSED)
+md_parse_option (int c, const char * arg ATTRIBUTE_UNUSED)
 {
   switch (c)
     {
@@ -186,22 +184,6 @@ md_begin (void)
 
   /* Set the machine type */
   bfd_default_set_arch_mach (stdoutput, bfd_arch_m32c, m32c_mach);
-
-  insn_size = 0;
-}
-
-void
-m32c_md_end (void)
-{
-  int i, n_nops;
-
-  if (bfd_get_section_flags (stdoutput, now_seg) & SEC_CODE)
-    {
-      /* Pad with nops for objdump.  */
-      n_nops = (32 - ((insn_size) % 32)) / 8;
-      for (i = 1; i <= n_nops; i++)
-	md_assemble ("nop");
-    }
 }
 
 void
@@ -267,7 +249,7 @@ m32c_indirect_operand (char *str)
 
   operand = 1;
   ns_len = strlen (str);
-  new_str = (char*) xmalloc (ns_len);
+  new_str = XNEWVEC (char, ns_len);
   ns = new_str;
   ns_end = ns + ns_len;
 
@@ -317,11 +299,11 @@ m32c_indirect_operand (char *str)
       }
 
   if (indirection[1] != none && indirection[2] != none)
-    md_assemble ("src-dest-indirect");
+    md_assemble ((char *) "src-dest-indirect");
   else if (indirection[1] != none)
-    md_assemble ("src-indirect");
+    md_assemble ((char *) "src-indirect");
   else if (indirection[2] != none)
-    md_assemble ("dest-indirect");
+    md_assemble ((char *) "dest-indirect");
 
   md_assemble (new_str);
   free (new_str);
@@ -336,6 +318,7 @@ md_assemble (char * str)
   char *    errmsg;
   finished_insnS results;
   int rl_type;
+  int insn_size;
 
   if (m32c_mach == bfd_mach_m32c && m32c_indirect_operand (str))
     return;
@@ -409,7 +392,7 @@ md_operand (expressionS * exp)
 valueT
 md_section_align (segT segment, valueT size)
 {
-  int align = bfd_get_section_alignment (stdoutput, segment);
+  int align = bfd_section_alignment (segment);
   return ((size + (1 << align) - 1) & -(1 << align));
 }
 
@@ -475,7 +458,7 @@ enum {
   M32C_MACRO_ADJNZ_3,
   M32C_MACRO_ADJNZ_4,
   M32C_MACRO_ADJNZ_5,
-} M32C_Macros;
+};
 
 static struct {
   int insn;
@@ -1064,9 +1047,9 @@ tc_gen_reloc (asection *sec, fixS *fx)
     {
       arelent * reloc;
 
-      reloc = xmalloc (sizeof (* reloc));
+      reloc = XNEW (arelent);
 
-      reloc->sym_ptr_ptr = xmalloc (sizeof (asymbol *));
+      reloc->sym_ptr_ptr = XNEW (asymbol *);
       *reloc->sym_ptr_ptr = symbol_get_bfdsym (fx->fx_addsy);
       reloc->address = fx->fx_frag->fr_address + fx->fx_where;
       reloc->howto = bfd_reloc_type_lookup (stdoutput, fx->fx_r_type);
@@ -1152,10 +1135,7 @@ md_number_to_chars (char * buf, valueT val, int n)
    type, and store the appropriate bytes in *litP.  The number of LITTLENUMS
    emitted is stored in *sizeP .  An error message is returned, or NULL on OK.  */
 
-/* Equal to MAX_PRECISION in atof-ieee.c.  */
-#define MAX_LITTLENUMS 6
-
-char *
+const char *
 md_atof (int type, char * litP, int * sizeP)
 {
   return ieee_md_atof (type, litP, sizeP, TRUE);
