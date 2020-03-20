@@ -50,6 +50,20 @@
 	MOVq $0x70000000,(%r8)	      # --  --  -- 49   C7 00 00 00 00 70		 ; REX for 64-bit operand size. REX to access upper reg.
 	MOVq $0x70000000,(%rax)	      # --  --  -- 48   C7 00 00 00 00 70		 ; REX for 64-bit operand size
 
+	# LFS etc
+	LFS  (%rax), %ecx             # --  --  -- --   0F B4 ..
+	LFSl (%rcx), %eax             # --  --  -- --   0F B4 ..
+	LFS  (%rax), %cx              # 66  --  -- --   0F B4 ..
+	LFSw (%rcx), %ax              # 66  --  -- --   0F B4 ..
+	LGS  (%rcx), %edx             # --  --  -- --   0F B5 ..
+	LGSl (%rdx), %ecx             # --  --  -- --   0F B5 ..
+	LGS  (%rcx), %dx              # 66  --  -- --   0F B5 ..
+	LGSw (%rdx), %cx              # 66  --  -- --   0F B5 ..
+	LSS  (%rdx), %ebx             # --  --  -- --   0F B2 ..
+	LSSl (%rbx), %edx             # --  --  -- --   0F B2 ..
+	LSS  (%rdx), %bx              # 66  --  -- --   0F B2 ..
+	LSSw (%rbx), %dx              # 66  --  -- --   0F B2 ..
+
 	# MOVNTI
 	MOVNTI %eax,(%r8)	      # --  --  -- 41   0f c3 00			 ; REX to access upper reg.
 	MOVNTI %eax,(%rax)	      # --  --  -- --   0f c3 00
@@ -322,12 +336,22 @@
 	# POP
 	POPq (%r8)		      #	 --  --	 -- 41	 8F 00				 ; REX to access upper reg.
 	POPq (%rax)		      #	 --  --	 -- --	 8F 00
-	POPFQ			      #	 --  --	 -- --	 9D
+	POP %fs			      #	 --  --	 -- --	 0F A1
+	POPq %fs		      #	 --  --	 -- --	 0F A1
+	POP %gs			      #	 --  --	 -- --	 0F A9
+	POPq %gs		      #	 --  --	 -- --	 0F A9
+	POPF			      #	 --  --	 -- --	 9D
+	POPFq			      #	 --  --	 -- --	 9D
 
 	# PUSH
 	PUSHq (%r8)		      #	 --  --	 -- 41	 FF 30				 ; REX to access upper reg.
 	PUSHq (%rax)		      #	 --  --	 -- --	 FF 30
-	PUSHFQ			      #	 --  --	 -- --	 9C
+	PUSH %fs		      #	 --  --	 -- --	 0F A0
+	PUSHq %fs		      #	 --  --	 -- --	 0F A0
+	PUSH %gs		      #	 --  --	 -- --	 0F A8
+	PUSHq %gs		      #	 --  --	 -- --	 0F A8
+	PUSHF			      #	 --  --	 -- --	 9C
+	PUSHFq			      #	 --  --	 -- --	 9C
 
 
 
@@ -427,3 +451,17 @@
         swapgs		              #  --  --	 -- --	 0F 01 f8
 
 	pushw $0x2222
+
+	.byte 0xf6, 0xc9, 0x01
+	.byte 0x66, 0xf7, 0xc9, 0x02, 0x00
+	.byte 0xf7, 0xc9, 0x04, 0x00, 0x00, 0x00
+	.byte 0x48, 0xf7, 0xc9, 0x08, 0x00, 0x00, 0x00
+	.byte 0xc0, 0xf0, 0x02
+	.byte 0xc1, 0xf0, 0x01
+	.byte 0x48, 0xc1, 0xf0, 0x01
+	.byte 0xd0, 0xf0
+	.byte 0xd1, 0xf0
+	.byte 0x48, 0xd1, 0xf0
+	.byte 0xd2, 0xf0
+	.byte 0xd3, 0xf0
+	.byte 0x48, 0xd3, 0xf0

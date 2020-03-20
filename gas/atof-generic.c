@@ -1,5 +1,5 @@
 /* atof_generic.c - turn a string of digits into a Flonum
-   Copyright (C) 1987-2015 Free Software Foundation, Inc.
+   Copyright (C) 1987-2020 Free Software Foundation, Inc.
 
    This file is part of GAS, the GNU Assembler.
 
@@ -184,23 +184,42 @@ atof_generic (/* return pointer to just AFTER number we read.  */
 
 #ifndef OLD_FLOAT_READS
   /* Ignore trailing 0's after the decimal point.  The original code here
-   * (ifdef'd out) does not do this, and numbers like
-   *	4.29496729600000000000e+09	(2**31)
-   * come out inexact for some reason related to length of the digit
-   * string.
-   */
+     (ifdef'd out) does not do this, and numbers like
+    	4.29496729600000000000e+09	(2**31)
+     come out inexact for some reason related to length of the digit
+     string.  */
+
+  /* The case number_of_digits_before_decimal = 0 is handled for
+     deleting zeros after decimal.  In this case the decimal mark and
+     the first zero digits after decimal mark are skipped.  */
+  seen_significant_digit = 0;
+  signed long subtract_decimal_exponent = 0;
+
   if (c && IS_DECIMAL_MARK (c))
     {
-      unsigned int zeros = 0;	/* Length of current string of zeros */
+      unsigned int zeros = 0;	/* Length of current string of zeros.  */
+
+      if (number_of_digits_before_decimal == 0)
+	/* Skip decimal mark.  */
+	first_digit++;
 
       for (p++; (c = *p) && ISDIGIT (c); p++)
 	{
 	  if (c == '0')
 	    {
-	      zeros++;
+	      if (number_of_digits_before_decimal == 0
+		  && !seen_significant_digit)
+		{
+		  /* Skip '0' and the decimal mark.  */
+		  first_digit++;
+		  subtract_decimal_exponent--;
+		}
+	      else
+		zeros++;
 	    }
 	  else
 	    {
+	      seen_significant_digit = 1;
 	      number_of_digits_after_decimal += 1 + zeros;
 	      zeros = 0;
 	    }
@@ -287,6 +306,12 @@ atof_generic (/* return pointer to just AFTER number we read.  */
 	}
     }
 
+#ifndef OLD_FLOAT_READS
+  /* Subtract_decimal_exponent != 0 when number_of_digits_before_decimal = 0
+     and first digit after decimal is '0'.  */
+  decimal_exponent += subtract_decimal_exponent;
+#endif
+
   *address_of_string_pointer = p;
 
   number_of_digits_available =
@@ -305,6 +330,8 @@ atof_generic (/* return pointer to just AFTER number we read.  */
     {
       int count;		/* Number of useful digits left to scan.  */
 
+      LITTLENUM_TYPE *temporary_binary_low = NULL;
+      LITTLENUM_TYPE *power_binary_low = NULL;
       LITTLENUM_TYPE *digits_binary_low;
       unsigned int precision;
       unsigned int maximum_useful_digits;
@@ -320,11 +347,12 @@ atof_generic (/* return pointer to just AFTER number we read.  */
 		   - address_of_generic_floating_point_number->low
 		   + 1);	/* Number of destination littlenums.  */
 
-      /* Includes guard bits (two littlenums worth) */
-      maximum_useful_digits = (((precision - 2))
-			       * ( (LITTLENUM_NUMBER_OF_BITS))
-			       * 1000000 / 3321928)
-	+ 2;			/* 2 :: guard digits.  */
+      /* precision includes two littlenums worth of guard bits,
+	 so this gives us 10 decimal guard digits here.  */
+      maximum_useful_digits = (precision
+			       * LITTLENUM_NUMBER_OF_BITS
+			       * 1000000 / 3321928
+			       + 1);	/* round up.  */
 
       if (number_of_digits_available > maximum_useful_digits)
 	{
@@ -362,7 +390,7 @@ atof_generic (/* return pointer to just AFTER number we read.  */
 	* sizeof (LITTLENUM_TYPE);
 
       digits_binary_low = (LITTLENUM_TYPE *)
-	alloca (size_of_digits_in_chars);
+	xmalloc (size_of_digits_in_chars);
 
       memset ((char *) digits_binary_low, '\0', size_of_digits_in_chars);
 
@@ -450,18 +478,16 @@ atof_generic (/* return pointer to just AFTER number we read.  */
 
       {
 	/*
-	 * Compute the mantssa (& exponent) of the power of 10.
+	 * Compute the mantissa (& exponent) of the power of 10.
 	 * If successful, then multiply the power of 10 by the digits
 	 * giving return_binary_mantissa and return_binary_exponent.
 	 */
 
-	LITTLENUM_TYPE *power_binary_low;
 	int decimal_exponent_is_negative;
 	/* This refers to the "-56" in "12.34E-56".  */
 	/* FALSE: decimal_exponent is positive (or 0) */
 	/* TRUE:  decimal_exponent is negative */
 	FLONUM_TYPE temporary_flonum;
-	LITTLENUM_TYPE *temporary_binary_low;
 	unsigned int size_of_power_in_littlenums;
 	unsigned int size_of_power_in_chars;
 
@@ -479,8 +505,9 @@ atof_generic (/* return pointer to just AFTER number we read.  */
 	size_of_power_in_chars = size_of_power_in_littlenums
 	  * sizeof (LITTLENUM_TYPE) + 2;
 
-	power_binary_low = (LITTLENUM_TYPE *) alloca (size_of_power_in_chars);
-	temporary_binary_low = (LITTLENUM_TYPE *) alloca (size_of_power_in_chars);
+	power_binary_low = (LITTLENUM_TYPE *) xmalloc (size_of_power_in_chars);
+	temporary_binary_low = (LITTLENUM_TYPE *) xmalloc (size_of_power_in_chars);
+
 	memset ((char *) power_binary_low, '\0', size_of_power_in_chars);
 	*power_binary_low = 1;
 	power_of_10_flonum.exponent = 0;
@@ -571,7 +598,6 @@ atof_generic (/* return pointer to just AFTER number we read.  */
 	  (void) putchar ('\n');
 #endif
 	}
-
       }
 
       /*
@@ -585,6 +611,11 @@ atof_generic (/* return pointer to just AFTER number we read.  */
       /* Assert sign of the number we made is '+'.  */
       address_of_generic_floating_point_number->sign = digits_sign_char;
 
+      if (temporary_binary_low)
+	free (temporary_binary_low);
+      if (power_binary_low)
+	free (power_binary_low);
+      free (digits_binary_low);
     }
   return return_value;
 }
