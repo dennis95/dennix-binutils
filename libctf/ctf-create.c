@@ -18,7 +18,9 @@
    <http://www.gnu.org/licenses/>.  */
 
 #include <ctf-impl.h>
+#ifdef HAVE_SYS_PARAM_H
 #include <sys/param.h>
+#endif
 #include <assert.h>
 #include <string.h>
 #include <zlib.h>
