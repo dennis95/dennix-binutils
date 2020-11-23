@@ -786,9 +786,7 @@ parse_stab_string (void *dhandle, struct stab_handle *info, int stabtype,
 	{
 	case 'r':
 	  /* Floating point constant.  */
-#ifndef __dennix__
 	  if (! debug_record_float_const (dhandle, name, atof (p)))
-#endif
 	    return FALSE;
 	  break;
 	case 'i':
